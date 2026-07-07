@@ -19,13 +19,17 @@ const {data, ...indexes} = initData(sourceData);
  */
 function collectState() {
     const state = processFormData(new FormData(sampleTable.container));
-    const rowsPerPage = parseInt(state.rowsPerPage);    // приведём количество страниц к числу
-    const page = parseInt(state.page ?? 1);                // номер страницы по умолчанию 1 и тоже число
+    const rowsPerPage = parseInt(state.rowsPerPage);
+    const page = parseInt(state.page ?? 1);
 
-    return {                                            // расширьте существующий return вот так
+    return {
         ...state,
         rowsPerPage,
-        page
+        page,
+        total: [
+            state.totalFrom ? parseFloat(state.totalFrom) : null,
+            state.totalTo ? parseFloat(state.totalTo) : null
+        ]
     };
 }
 
@@ -38,14 +42,10 @@ function render(action) {
     let result = [...data]; // копируем для последующего изменения
     // @todo: использование
 
-    result = applyPagination(
-        applySorting(
-            applySearching(
-                applyFiltering(
-                    result,state,action),
-                state,action),
-            state,action),
-        state, action);
+    result = applySearching(result, state, action);
+    result = applyFiltering(result, state, action);
+    result = applySorting(result, state, action);
+    result = applyPagination(result, state, action);
 
     sampleTable.render(result)
 }
